@@ -8,6 +8,7 @@ import {
   GetDoctorById,
   adminDashboard,
   usersAdmin,
+  updateKYCStatus,
 } from "../controllers/adminController.js";
 import { changeAvailablity } from "../controllers/doctorController.js";
 import authAdmin from "../middleware/authAdmin.js";
@@ -21,6 +22,7 @@ adminRouter.get("/users", authAdmin, usersAdmin);
 adminRouter.post("/cancel-appointment", authAdmin, appointmentCancel);
 adminRouter.get("/all-doctors", authAdmin, allDoctors);
 adminRouter.get("/doctor/:id", authAdmin, GetDoctorById);
+adminRouter.post("/doctor/kyc-status", authAdmin, updateKYCStatus);
 adminRouter.post("/change-availability", authAdmin, changeAvailablity);
 adminRouter.get("/dashboard", authAdmin, adminDashboard);
 

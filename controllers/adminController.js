@@ -167,6 +167,20 @@ const GetDoctorById = async (req, res) => {
   }
 };
 
+// Update KYC Status
+const updateKYCStatus = async (req, res) => {
+  try {
+    const { doctorId, status } = req.body;
+    let doctor = await doctorModel.findByIdAndUpdate(doctorId, { status });
+    console.log(doctor, status);
+
+    res.json({ success: true, message: "KYC status updated" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 // API to get dashboard data for admin panel
 const adminDashboard = async (req, res) => {
   try {
@@ -195,6 +209,7 @@ export {
   addDoctor,
   allDoctors,
   GetDoctorById,
+  updateKYCStatus,
   usersAdmin,
   adminDashboard,
 };
