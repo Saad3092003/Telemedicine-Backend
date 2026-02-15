@@ -146,6 +146,78 @@ const appointmentsDoctor = async (req, res) => {
   }
 };
 
+// API to get single appointment details (doctor access)
+const getAppointment = async (req, res) => {
+  try {
+    const { docId, appointmentId } = req.body;
+    const appointmentData = await appointmentModel.findById(appointmentId);
+    if (!appointmentData)
+      return res.json({ success: false, message: "Appointment not found" });
+    if (appointmentData.docId !== docId)
+      return res.json({ success: false, message: "Unauthorized" });
+    res.json({ success: true, appointment: appointmentData });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// API for doctor to start video call (creates/returns room id)
+const startVideo = async (req, res) => {
+  try {
+    const { docId, appointmentId } = req.body;
+    const appointmentData = await appointmentModel.findById(appointmentId);
+    if (!appointmentData)
+      return res.json({ success: false, message: "Appointment not found" });
+    if (appointmentData.docId !== docId)
+      return res.json({ success: false, message: "Unauthorized" });
+
+    const roomId =
+      appointmentData.videoRoomId ||
+      `${appointmentId}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    await appointmentModel.findByIdAndUpdate(appointmentId, {
+      videoRoomId: roomId,
+      videoStatus: "ongoing",
+      videoStartedAt: Date.now(),
+    });
+
+    res.json({ success: true, roomId });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// API to save prescription after call and mark appointment completed
+const savePrescription = async (req, res) => {
+  try {
+    const { docId, appointmentId, prescription } = req.body;
+    const appointmentData = await appointmentModel.findById(appointmentId);
+    if (!appointmentData)
+      return res.json({ success: false, message: "Appointment not found" });
+    if (appointmentData.docId !== docId)
+      return res.json({ success: false, message: "Unauthorized" });
+
+    await appointmentModel.findByIdAndUpdate(appointmentId, {
+      prescription: {
+        medicines: prescription.medicines || [],
+        notes: prescription.notes || "",
+        remedies: prescription.remedies || "",
+        prescribedAt: Date.now(),
+      },
+      isCompleted: true,
+      videoStatus: "completed",
+      videoEndedAt: Date.now(),
+    });
+
+    res.json({ success: true, message: "Prescription saved" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 // API to cancel appointment for doctor panel
 const appointmentCancel = async (req, res) => {
   try {
@@ -295,4 +367,7 @@ export {
   doctorDashboard,
   doctorProfile,
   updateDoctorProfile,
+  getAppointment,
+  startVideo,
+  savePrescription,
 };

@@ -236,6 +236,23 @@ const listAppointment = async (req, res) => {
   }
 };
 
+// API to get single appointment details for patient
+const getAppointmentById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+    const appointment = await appointmentModel.findById(id);
+    if (!appointment)
+      return res.json({ success: false, message: "Appointment not found" });
+    if (appointment.userId !== userId)
+      return res.json({ success: false, message: "Unauthorized" });
+    res.json({ success: true, appointment });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 // API to make payment of appointment using razorpay
 const paymentRazorpay = async (req, res) => {
   try {
@@ -360,4 +377,5 @@ export {
   verifyRazorpay,
   paymentStripe,
   verifyStripe,
+  getAppointmentById,
 };
