@@ -365,6 +365,99 @@ const verifyStripe = async (req, res) => {
   }
 };
 
+// API to add/update rating and feedback for completed appointment
+const addRating = async (req, res) => {
+  try {
+    const { appointmentId, userId, stars, feedback } = req.body;
+
+    // Validate rating
+    if (!appointmentId || !userId || !stars || stars < 1 || stars > 5) {
+      return res.json({
+        success: false,
+        message: "Invalid rating data",
+      });
+    }
+
+    // Get appointment and verify it belongs to user
+    const appointment = await appointmentModel.findById(appointmentId);
+
+    if (!appointment) {
+      return res.json({
+        success: false,
+        message: "Appointment not found",
+      });
+    }
+
+    if (appointment.userId !== userId) {
+      return res.json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    // Check if appointment is completed
+    if (appointment.videoStatus !== "completed") {
+      return res.json({
+        success: false,
+        message: "Can only rate completed appointments",
+      });
+    }
+
+    // Update appointment with rating
+    await appointmentModel.findByIdAndUpdate(appointmentId, {
+      rating: {
+        stars: parseInt(stars),
+        feedback: feedback || "",
+        ratedAt: Date.now(),
+      },
+    });
+
+    res.json({ success: true, message: "Rating submitted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// API to get average rating for a doctor
+const getDoctorRating = async (req, res) => {
+  try {
+    const { docId } = req.params;
+
+    // Get all appointments for this doctor with ratings
+    const appointments = await appointmentModel
+      .find({
+        docId: docId,
+        "rating.stars": { $gt: 0 }, // Only get appointments with ratings
+      })
+      .select("rating");
+
+    if (appointments.length === 0) {
+      return res.json({
+        success: true,
+        averageRating: 0,
+        totalReviews: 0,
+      });
+    }
+
+    // Calculate average rating
+    const totalStars = appointments.reduce((sum, apt) => {
+      return sum + (apt.rating?.stars || 0);
+    }, 0);
+
+    const averageRating = (totalStars / appointments.length).toFixed(1);
+
+    res.json({
+      success: true,
+      averageRating: parseFloat(averageRating),
+      totalReviews: appointments.length,
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 export {
   loginUser,
   registerUser,
@@ -378,4 +471,6 @@ export {
   paymentStripe,
   verifyStripe,
   getAppointmentById,
+  addRating,
+  getDoctorRating,
 };

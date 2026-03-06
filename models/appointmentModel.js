@@ -30,6 +30,12 @@ const appointmentSchema = new mongoose.Schema({
     remedies: { type: String, default: "" },
     prescribedAt: { type: Number, default: null },
   },
+  // Rating details given by patient after consultation
+  rating: {
+    stars: { type: Number, min: 0, max: 5, default: 0 },
+    feedback: { type: String, default: "" },
+    ratedAt: { type: Number, default: null },
+  },
 });
 
 const appointmentModel =

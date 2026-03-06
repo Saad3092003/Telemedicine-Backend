@@ -12,6 +12,8 @@ import {
   paymentStripe,
   verifyStripe,
   getAppointmentById,
+  addRating,
+  getDoctorRating,
 } from "../controllers/userController.js";
 import upload from "../middleware/multer.js";
 import authUser from "../middleware/authUser.js";
@@ -31,6 +33,8 @@ userRouter.post("/book-appointment", authUser, bookAppointment);
 userRouter.get("/appointments", authUser, listAppointment);
 userRouter.get("/appointment/:id", authUser, getAppointmentById);
 userRouter.post("/cancel-appointment", authUser, cancelAppointment);
+userRouter.post("/add-rating", authUser, addRating);
+userRouter.get("/doctor-rating/:docId", getDoctorRating);
 userRouter.post("/payment-razorpay", authUser, paymentRazorpay);
 userRouter.post("/verifyRazorpay", authUser, verifyRazorpay);
 userRouter.post("/payment-stripe", authUser, paymentStripe);
